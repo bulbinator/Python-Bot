@@ -11,67 +11,46 @@ from discord.app_commands import Choice
 from discord.ext import commands
 
 
-def choices(v, b, c, h):
-  try:
-    URL = f"https://thaqalayn.net/hadith/{v}/{b}/{c}/{h}"
-    r = requests.get(URL)
-      
-    soup = BeautifulSoup(r.content, "html.parser")
+
+def book_dict():
+  response = requests.get("https://www.thaqalayn-api.net/api/allbooks")
+  books = response.json()
+  book_dict = {}
+  for i in range(len(books)):
+    book_dict[books[i]["bookId"]] = books[i]["BookName"]
+  return book_dict
+    
+    
   
-    pElement = soup.find_all('p')
-    for element in pElement:
-      if "Allamah Baqir al-Majlisi:" in element.get_text():
-        majlisiGrading =   element.get_text()
+
+
+def choices(book, num):
+  try:
+    response = requests.get(f"https://www.thaqalayn-api.net/api/{book}/{num}")
+    hadith = response.json()
+  
+    if hadith[0]["author"] == "Shaykh Muḥammad Āṣif al-Muḥsinī":
+      hadith[0]["majlisiGrading"] = hadith[0]["mohseniGrading"]
+  
+    majlisi = hadith[0]["majlisiGrading"].split()
+    grading = []
       
-    arabicText = soup.find_all("p", class_="card-texts text-end libAr")[0].get_text()
-    englishText = soup.find_all("p", class_="card-texts text-start")[0].get_text()
-
-
-    majlisiGrading = ""
-    grading = ""
-
-    for i in majlisiGrading.split():
+    for i in majlisi:
       if "م" in i or "ي" in i or "ح" in i or "ع" in i or "ا" in i or "ل" in i or "ق" in i:
-        grading = grading + " " + i
-
-    chapters = soup.find("h6").get_text().split()
-    for i in chapters:
-      if i != ">":
-        chapters.remove(i)
-      else:
-        chapters.remove(i)
-        break
-
-    for i in chapters:
-      if i.isdigit():
-        chapters.remove(i)
-    for i in chapters:
-      if i == "." or i == "-":
-        chapters.remove(i)
-
-        
-    chapter = " ".join(chapters)
-    
-    URL = f"https://thaqalayn.net/book/{v}"
-    r = requests.get(URL)
-        
-    soup = BeautifulSoup(r.content, "html.parser")
-        
-    book = soup.find("h1").get_text()
-    author = soup.find("h6").get_text()
-
-    URL = f"https://thaqalayn.net/hadith/{v}/{b}/{c}/{h}"
-    
+        grading.append(i)
+    grading = " ".join(grading)
+  
+      
+      
     return {
-        "arabic": arabicText,
-        "english": englishText,
-        "author": author,
-        "book": book,
-        "URL": URL,
-        "chapter": chapter,
+        "arabic": hadith[0]["arabicText"],
+        "english": hadith[0]["englishText"],
+        "author": hadith[0]["author"],
+        "book": hadith[0]["book"],
+        "URL": hadith[0]["URL"],
+        "chapter": hadith[0]["chapter"],
         "grading": grading
-    }    
-
+      }
   except:
     return 0
 
@@ -228,6 +207,8 @@ def linked(link):
     r = requests.get(URL)
       
     soup = BeautifulSoup(r.content, "html.parser")
+
+    majlisiGrading = ""
   
     pElement = soup.find_all('p')
     for element in pElement:
@@ -293,3 +274,10 @@ def linked(link):
 
   except:
     return 0
+
+#
+def dict_choice(dictionary: dict):
+  books = []
+  for key in list(dictionary.keys())[0:40 - 1]:
+    books.append(Choice(name=dictionary[key], value=key))
+  return books
