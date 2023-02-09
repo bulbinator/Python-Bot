@@ -34,7 +34,7 @@ async def on_ready():
 async def search(interaction: discord.Interaction, keywords: str, lang: str):
     hadith = get_hadith(keywords)
     if hadith == 0:
-      await interaction.response.send_message("404. Hadith not found. Make sure to be specific!")
+      await interaction.response.send_message("404. Hadith not found. Make sure to be specific and enter exact keywords!")
     else:
       if lang == "1":
         embed = send(hadith)
@@ -46,23 +46,14 @@ async def search(interaction: discord.Interaction, keywords: str, lang: str):
 
 
 @tree.command(name = "hadith", description = "Find a hadith.", guild=discord.Object(id=1072270741501907094))
-@app_commands.describe(lang = "English or Arabic?", volume = "Enter volume number.", book_number = "Enter book number.", chapter_number = "Enter chapter number.", hadith_number = "Enter hadith number.")
-@app_commands.choices(volume = [
-  Choice(name = "Al-Kāfi - Volume 1", value = "1"),
-  Choice(name = "Al-Kāfi - Volume 2", value = "2"),
-  Choice(name = "Al-Kāfi - Volume 3", value = "3"),
-  Choice(name = "Al-Kāfi - Volume 4", value = "4"),
-  Choice(name = "Al-Kāfi - Volume 5", value = "5"),
-  Choice(name = "Al-Kāfi - Volume 6", value = "6"),
-  Choice(name = "Al-Kāfi - Volume 7", value = "7"),
-  Choice(name = "Al-Kāfi - Volume 8", value = "8"),
-])
+@app_commands.describe(lang = "English or Arabic?", book = "Enter book.", hadith_number = "Enter hadith number")
+@app_commands.choices(book = dict_choice(book_dict()))
 @app_commands.choices(lang = [
   Choice(name = "English", value = "1"),
   Choice(name = "Arabic", value = "2")
 ])
-async def hadith(interaction: discord.Interaction, lang: str, volume: str, book_number: str, chapter_number: str, hadith_number: str):
-  hadith = choices(volume, book_number, chapter_number, hadith_number)
+async def hadith(interaction: discord.Interaction, lang: str, book: str, hadith_number: str):
+  hadith = choices(book, hadith_number)
   if hadith == 0:
     await interaction.response.send_message("404. Hadith not found. Make sure you enetered the correct information!")
   else:
@@ -107,4 +98,4 @@ async def link(interaction: discord.Interaction):
 
 
 
-client.run("MTA3MjI3MTA0NzI1ODI4MDAwNw.GLv-i6.2DbBz0DnWCU2awzX4XFTBeoiCoRx5HyMA3Qj3I")
+client.run(TOKEN)
