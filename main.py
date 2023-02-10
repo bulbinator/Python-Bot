@@ -1,4 +1,4 @@
-import discord
+import discord, asyncio
 import re
 import requests
 import json
@@ -39,9 +39,13 @@ async def search(interaction: discord.Interaction, keywords: str, lang: str):
       if lang == "1":
         embed = send(hadith)
         await interaction.response.send_message(embed=embed)
+        if hadith["more"] == True:
+          await interaction.followup.send(f"I found more than one narrations with those keywords, [click here]({hadith['link']}) to view them.")
       else:
         embed = asend(hadith)
         await interaction.response.send_message(embed=embed)
+        if hadith["more"] == True:
+          await interaction.followup.send(f"I found more than one narrations with those keywords, [click here]({hadith['link']}) to view them.")
 
 
 
@@ -86,16 +90,45 @@ async def link(interaction: discord.Interaction, link: str, lang: str):
     else:
       if lang == "1":
         embed = send(hadith)
+        await interaction.response.defer()
+        await asyncio.sleep(4)
+        await interaction.followup.send(embed=embed)
+      else:
+        embed = asend(hadith)
+        await interaction.response.defer()
+        await asyncio.sleep(4)
+        await interaction.followup.send(embed=embed)
+        
+
+
+@tree.command(name = "search_in", description = "Search for a hadith in a specific book.", guild=discord.Object(id=1072270741501907094))
+@app_commands.describe(keywords = "Enter the keywords of the hadith", book = "Enter book.",lang = "English or Arabic?")
+@app_commands.choices(lang = [
+  Choice(name = "English", value = "1"),
+  Choice(name = "Arabic", value = "2")
+])
+@app_commands.choices(book = dict_choice(book_dict()))
+async def search_in(interaction: discord.Interaction, keywords: str, book: str,lang: str):
+    hadith = search_book(keywords, book)
+    if hadith == 0:
+      await interaction.response.send_message("404. Hadith not found. Make sure to be specific and enter exact keywords!")
+    else:
+      if lang == "1":
+        embed = send(hadith)
         await interaction.response.send_message(embed=embed)
+        if hadith["more"] == True:
+          await interaction.followup.send(f"I found more than one narrations with those keywords, [click here]({hadith['link']}) to view them.")
       else:
         embed = asend(hadith)
         await interaction.response.send_message(embed=embed)
+        if hadith["more"] == True:
+          await interaction.followup.send(f"I found more than one narrations with those keywords, [click here]({hadith['link']}) to view them.")
 
 
-@tree.command(name = "status", description = "Returns the status of the bot.", guild=discord.Object(id=1072270741501907094))
-async def link(interaction: discord.Interaction):
-  await interaction.response.send_message("الحمد لله على كل حال!")
+@tree.command(name = "madad", description = "Returns the bot's functions.", guild=discord.Object(id=1072270741501907094))
+async def madad(interaction: discord.Interaction):
+  await interaction.response.send_message("'/hadith' function takes the name of a hadith book and the hadith number and returns the requested hadith from thaqalayn.\n'/search' function requires you enter the exact keywords of a hadith in english or arabic and returns the requested hadith from thaqalayn.\n'/search in' function lets you search for a query in a specific book\n/link' function requires you enter a valid link to a hadith on thaqalyn, and it returns that hadith.\n'/random' function just sends a random hadith lol")
 
 
 
-client.run(TOKEN)
+client.run("MTA3MjI3MTA0NzI1ODI4MDAwNw.GpvnQS.GWNyJjFrIjEyIThepHfibkkVD9Up_GHTr4KQS0")
