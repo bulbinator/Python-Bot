@@ -131,4 +131,4 @@ async def madad(interaction: discord.Interaction):
 
 
 
-client.run("MTA3MjI3MTA0NzI1ODI4MDAwNw.GpvnQS.GWNyJjFrIjEyIThepHfibkkVD9Up_GHTr4KQS0")
+client.run(TOKEN)
