@@ -8,6 +8,7 @@ from pathlib import Path
 import os
 from functions import *
 from discord import app_commands
+from discord.ext import commands
 from discord.app_commands import Choice
 from discord.ext import commands
 
@@ -25,6 +26,17 @@ async def on_ready():
     await tree.sync(guild=discord.Object(id=1072270741501907094))
     print("Ready!")
 
+
+class Menu(discord.ui.View):
+  def __init__(self):
+    super().__init__()
+    self.value = None
+
+  @discord.ui.button(label="Send Message", style=discord.ButtonStyle.grey)
+  async def menu1(self, button: discord.ui.Button, interaction: discord.Interaction):
+    await interaction.response.send_message("Hello you clicked me")
+
+
 @tree.command(name = "search", description = "Search for a hadith.", guild=discord.Object(id=1072270741501907094))
 @app_commands.describe(keywords = "Enter the keywords of the hadith", lang = "English or Arabic?")
 @app_commands.choices(lang = [
@@ -38,6 +50,7 @@ async def search(interaction: discord.Interaction, keywords: str, lang: str):
     else:
       if lang == "1":
         embed = send(hadith)
+        view = Menu()
         await interaction.response.send_message(embed=embed)
         if hadith["more"] == True:
           await interaction.followup.send(f"I found more than one narrations with those keywords, [click here]({hadith['link']}) to view them.")
