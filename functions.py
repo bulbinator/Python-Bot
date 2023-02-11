@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 import json
 from pathlib import Path
 import os
+import textwrap
 from discord import app_commands
 from discord.app_commands import Choice
 from discord.ext import commands
@@ -18,6 +19,8 @@ def book_dict():
   book_dict = {}
   for i in range(len(books)):
     book_dict[books[i]["bookId"]] = books[i]["BookName"]
+
+    
   book_dict["Al-Amali-Saduq"] = "Al-Amālī al Ṣaduq"
   book_dict["Al-Amali-Mufid"] = "Al-Amālī al Mufīd"
   book_dict["Kitab-al-Ghayba-Numani"] = "Kitāb al-Ghayba al-Nuʿmānī"
@@ -61,6 +64,8 @@ def choices(book, num):
 
 def get_hadith(search):
   try:
+    link = ""
+    search = search.replace(" ", "+")
     link = ""
     response = requests.get(f"https://www.thaqalayn-api.net/api/query?q={search}")
     hadith = response.json()
@@ -137,8 +142,13 @@ def send(hadith):
     english = english.replace("(AS)", "(ع)")
     english = english.replace("(SA)", "(ص)")
     english = english.replace("‘Alayhi al-Salam", "(ع)")
+
+    page = 1
+    pages = textwrap.wrap(english, 1200)
+    page = pages[page - 1]
+    num_pages = len(pages)
   
-    embed = discord.Embed(title = hadith["chapter"], description = english, color = 0x4034eb)
+    embed = discord.Embed(title = hadith["chapter"], description = page, color = 0x084c6c)
     embed.set_author(name= f"{book} - {author}", icon_url="https://i.ibb.co/XZnVbG4/thaq-1.png")
     embed.add_field(name="Grading: ", value = hadith["grading"], inline=True)
     embed.add_field(name="Source: ", value= f"[{hadith['book']}: {hadith['id']}]({hadith['URL']})", inline=True)
@@ -182,8 +192,14 @@ def asend(hadith):
       if "Amālī" in book:
         book = "al-Amālī"
       book = book.replace('-', ' ')
+
+      
+      page = 1
+      pages = textwrap.wrap(hadith["arabic"], 1200)
+      page = pages[page - 1]
+      num_pages = len(pages)
         
-    embed = discord.Embed(title = "باب", description = hadith["arabic"], color = 0x4034eb)
+    embed = discord.Embed(title = "باب", description = page, color = 0x084c6c)
     embed.set_author(name= f"{book} - {author}", icon_url="https://i.ibb.co/XZnVbG4/thaq-1.png")
     embed.add_field(name="إسناد: ", value = hadith["grading"], inline=True)
     embed.add_field(name="كتاب: ", value= f"[{hadith['book']}: {hadith['id']}]({hadith['URL']})", inline=True)
@@ -245,6 +261,8 @@ def linked(link):
       if list_of_books[i]["BookName"] == book:
         book = list_of_books[i]["bookId"]
         break
+    if booknum == "27":
+      book = "Kitab-al-Ghayba-Tusi"
 
         
     response = requests.get(f"https://www.thaqalayn-api.net/api/{book}")
@@ -295,12 +313,13 @@ def dict_choice(dictionary: dict):
 
 def search_book(search, book):
   try:
+    search = search.replace(" ", "+")
     link = ""
     response = requests.get(f"https://www.thaqalayn-api.net/api/query/{book}?q={search}")
     hadith = response.json()
     if len(hadith) > 1:
       more = True
-      link = f"https://thaqalayn.net/customsearch?book_id={book}&query{search}&exactPhrase=true"
+      link = f"https://thaqalayn.net/customsearch?book_id=all&query={search}&exactPhrase=true"
     else:
       more = False
     if hadith[0]["author"] == "Shaykh Muḥammad Āṣif al-Muḥsinī":
