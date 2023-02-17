@@ -46,6 +46,17 @@ def choices(book, num):
       if "م" in i or "ي" in i or "ح" in i or "ع" in i or "ا" in i or "ل" in i or "ق" in i:
         grading.append(i)
     grading = " ".join(grading)
+
+    
+    page = 1
+    pages = textwrap.wrap(hadith[0]["englishText"], 1200)
+    page = pages[page - 1]
+    num_pages = len(pages)
+
+    ara_page = 1
+    ara_pages = textwrap.wrap(hadith[0]["arabicText"], 1200)
+    ara_page = ara_pages[ara_page - 1]
+    num_pages = len(ara_pages)
   
       
       
@@ -57,7 +68,9 @@ def choices(book, num):
         "URL": hadith[0]["URL"],
         "chapter": hadith[0]["chapter"],
         "grading": grading,
-        "id": hadith[0]["id"]
+        "id": hadith[0]["id"],
+        "pages": pages,
+        "ara_pages": ara_pages
       }
   except:
     return 0
@@ -85,6 +98,17 @@ def get_hadith(search):
         grading.append(i)
     grading = " ".join(grading)
 
+
+    page = 1
+    pages = textwrap.wrap(hadith[0]["englishText"], 1200)
+    page = pages[page - 1]
+    num_pages = len(pages)
+
+    ara_page = 1
+    ara_pages = textwrap.wrap(hadith[0]["arabicText"], 1200)
+    ara_page = ara_pages[ara_page - 1]
+    num_pages = len(ara_pages)
+
     
     return {
         "arabic": hadith[0]["arabicText"],
@@ -96,7 +120,9 @@ def get_hadith(search):
         "grading": grading,
         "id": hadith[0]["id"],
         "more": more,
-        "link": link
+        "link": link,
+        "pages": pages,
+        "ara_pages": ara_pages
     }
   except:
     return 0
@@ -142,16 +168,25 @@ def send(hadith):
     english = english.replace("(AS)", "(ع)")
     english = english.replace("(SA)", "(ص)")
     english = english.replace("‘Alayhi al-Salam", "(ع)")
+    english = english.replace("(asws)", "(ع)")
 
     page = 1
     pages = textwrap.wrap(english, 1200)
     page = pages[page - 1]
     num_pages = len(pages)
+
+    chapter = hadith["chapter"].split()
+    for i in chapter:
+      if i.isalpha() == False:
+        chapter.remove(i)
+        break
+    chapter = " ".join(chapter)
   
-    embed = discord.Embed(title = hadith["chapter"], description = page, color = 0x084c6c)
+    embed = discord.Embed(title = chapter, description = page, color = 0x084c6c)
     embed.set_author(name= f"{book} - {author}", icon_url="https://i.ibb.co/XZnVbG4/thaq-1.png")
     embed.add_field(name="Grading: ", value = hadith["grading"], inline=True)
     embed.add_field(name="Source: ", value= f"[{hadith['book']}: {hadith['id']}]({hadith['URL']})", inline=True)
+    embed.set_footer(text=f'Page {1} of {num_pages}')
     return embed
 
 
@@ -203,6 +238,7 @@ def asend(hadith):
     embed.set_author(name= f"{book} - {author}", icon_url="https://i.ibb.co/XZnVbG4/thaq-1.png")
     embed.add_field(name="إسناد: ", value = hadith["grading"], inline=True)
     embed.add_field(name="كتاب: ", value= f"[{hadith['book']}: {hadith['id']}]({hadith['URL']})", inline=True)
+    embed.set_footer(text=f'Page {1} of {num_pages}')
     return embed
 
 
@@ -222,6 +258,12 @@ def randomh():
       grading.append(i)
   grading = " ".join(grading)
 
+  
+  page = 1
+  pages = textwrap.wrap(hadith["englishText"], 1200)
+  page = pages[page - 1]
+  num_pages = len(pages)
+
     
     
   return {
@@ -232,7 +274,8 @@ def randomh():
       "URL": hadith["URL"],
       "chapter": hadith["chapter"],
       "grading": grading,
-      "id": hadith["id"]
+      "id": hadith["id"],
+      "pages": pages
     }
 
 
@@ -263,6 +306,8 @@ def linked(link):
         break
     if booknum == "27":
       book = "Kitab-al-Ghayba-Tusi"
+    if booknum == "29":
+      book = "Al-Amali-Saduq"
 
         
     response = requests.get(f"https://www.thaqalayn-api.net/api/{book}")
@@ -285,6 +330,17 @@ def linked(link):
       if "م" in i or "ي" in i or "ح" in i or "ع" in i or "ا" in i or "ل" in i or "ق" in i:
         grading.append(i)
     grading = " ".join(grading)
+
+    
+    page = 1
+    pages = textwrap.wrap(hadith[0]["englishText"], 1200)
+    page = pages[page - 1]
+    num_pages = len(pages)
+
+    ara_page = 1
+    ara_pages = textwrap.wrap(hadith[0]["arabicText"], 1200)
+    ara_page = ara_pages[ara_page - 1]
+    num_pages = len(ara_pages)
   
       
       
@@ -296,7 +352,9 @@ def linked(link):
         "URL": hadith[0]["URL"],
         "chapter": hadith[0]["chapter"],
         "grading": grading,
-        "id": hadith[0]["id"]
+        "id": hadith[0]["id"],
+        "pages": pages,
+        "ara_pages": ara_pages
       }
         
     
@@ -332,6 +390,16 @@ def search_book(search, book):
       if "م" in i or "ي" in i or "ح" in i or "ع" in i or "ا" in i or "ل" in i or "ق" in i:
         grading.append(i)
     grading = " ".join(grading)
+   
+    page = 1
+    pages = textwrap.wrap(hadith[0]["englishText"], 1200)
+    page = pages[page - 1]
+    num_pages = len(pages)
+
+    ara_page = 1
+    ara_pages = textwrap.wrap(hadith[0]["arabicText"], 1200)
+    ara_page = ara_pages[ara_page - 1]
+    num_pages = len(ara_pages)
 
     
     return {
@@ -344,7 +412,9 @@ def search_book(search, book):
         "grading": grading,
         "id": hadith[0]["id"],
         "more": more,
-        "link": link
+        "link": link,
+        "pages": pages,
+        "ara_pages": ara_pages
     }
   except:
     return 0
