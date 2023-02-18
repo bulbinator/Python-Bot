@@ -4,6 +4,8 @@ import requests
 import json
 from bs4 import BeautifulSoup
 import json
+from jamshed import jamshed
+import unidecode
 from pathlib import Path
 import os
 import textwrap
@@ -46,6 +48,12 @@ def choices(book, num):
       if "م" in i or "ي" in i or "ح" in i or "ع" in i or "ا" in i or "ل" in i or "ق" in i:
         grading.append(i)
     grading = " ".join(grading)
+
+    
+    if hadith[0]["bookId"] == "Kamil-al-Ziyarat-Qummi":
+      hadith[0]["englishText"] = unidecode.unidecode(hadith[0]["englishText"])
+
+    hadith[0]["englishText"] = jamshed(hadith[0]["englishText"])
 
     
     page = 1
@@ -99,6 +107,13 @@ def get_hadith(search):
     grading = " ".join(grading)
 
 
+    
+    if hadith[0]["bookId"] == "Kamil-al-Ziyarat-Qummi":
+      hadith[0]["englishText"] = unidecode.unidecode(hadith[0]["englishText"])
+
+    hadith[0]["englishText"] = jamshed(hadith[0]["englishText"])
+
+
     page = 1
     pages = textwrap.wrap(hadith[0]["englishText"], 1200)
     page = pages[page - 1]
@@ -145,6 +160,7 @@ def send(hadith):
         author = "al-Ahwāzī"
       if "al-Qummī" in i:
         author = "Jaʿfar b. Muḥammad al Qummī"
+        hadith["english"] = unidecode.unidecode(hadith["english"])
       if "al-Muḥsinī" in i:
         author = "al Muḥsinī"
       if "al-Ghaḍā'irī" in i:
@@ -162,13 +178,8 @@ def send(hadith):
         book = "al-Amālī"
       book = book.replace('-', ' ')
     english = hadith["english"]
-    english = hadith["english"].replace("(a.s.)", "(ع)")
-    english = english.replace("(a.s.)", "(ع)")
-    english = english.replace("(MGB)", "(ع)")
-    english = english.replace("(AS)", "(ع)")
-    english = english.replace("(SA)", "(ص)")
-    english = english.replace("‘Alayhi al-Salam", "(ع)")
-    english = english.replace("(asws)", "(ع)")
+
+    english = jamshed(english)
 
     page = 1
     pages = textwrap.wrap(english, 1200)
@@ -245,6 +256,8 @@ def asend(hadith):
 def randomh():
   response = requests.get("https://www.thaqalayn-api.net/api/random")
   hadith = response.json()
+  if hadith["book"] == "Rijāl Ibn al-Ghaḍā'irī":
+    return randomh()
 
 
   if hadith["author"] == "Shaykh Muḥammad Āṣif al-Muḥsinī":
@@ -257,6 +270,14 @@ def randomh():
     if "م" in i or "ي" in i or "ح" in i or "ع" in i or "ا" in i or "ل" in i or "ق" in i:
       grading.append(i)
   grading = " ".join(grading)
+
+
+  
+    
+  if hadith["bookId"] == "Kamil-al-Ziyarat-Qummi":
+    hadith["englishText"] = unidecode.unidecode(hadith["englishText"])
+
+  hadith["englishText"] = jamshed(hadith["englishText"])
 
   
   page = 1
@@ -331,6 +352,14 @@ def linked(link):
         grading.append(i)
     grading = " ".join(grading)
 
+
+    
+    
+    if book == "Kamil-al-Ziyarat-Qummi":
+      hadith[0]["englishText"] = unidecode.unidecode(hadith[0]["englishText"])
+
+    hadith[0]["englishText"] = jamshed(hadith[0]["englishText"])
+
     
     page = 1
     pages = textwrap.wrap(hadith[0]["englishText"], 1200)
@@ -390,6 +419,13 @@ def search_book(search, book):
       if "م" in i or "ي" in i or "ح" in i or "ع" in i or "ا" in i or "ل" in i or "ق" in i:
         grading.append(i)
     grading = " ".join(grading)
+
+    
+    
+    if hadith[0]["bookId"] == "Kamil-al-Ziyarat-Qummi":
+      hadith[0]["englishText"] = unidecode.unidecode(hadith[0]["englishText"])
+
+    hadith[0]["englishText"] = jamshed(hadith[0]["englishText"])
    
     page = 1
     pages = textwrap.wrap(hadith[0]["englishText"], 1200)
