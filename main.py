@@ -25,6 +25,7 @@ tree = app_commands.CommandTree(client)
 
 
 
+
 @client.event
 async def on_ready():
     await tree.sync()
@@ -38,7 +39,11 @@ async def on_message(message):
       if 'https://thaqalayn.net/hadith' in i:
         hadith = linked(i)
         embed = send(hadith)
-        await message.channel.send(embed=embed,reference=message,mention_author=False)
+        view = linked_menu(0, hadith["pages"], embed)
+        if len(hadith["pages"]) > 1:
+          await message.channel.send(embed=embed,view=view, reference=message, mention_author=False)
+        else:
+          await message.channel.send(embed=embed, reference=message, mention_author=False)
         
   if "http://shiaonlinelibrary.com/" in message.content:
     link = message.content.split()
@@ -46,17 +51,86 @@ async def on_message(message):
       if 'http://shiaonlinelibrary.com/' in i:
         hadith = sol(i)
         embed = sol_send(hadith)
-        await message.channel.send(embed=embed,reference=message,mention_author=False)
+        await message.channel.send(embed=embed,reference=message, mention_author=False)
 
 
 class Menu(discord.ui.View):
-  def __init__(self):
-    super().__init__()
+  def __init__(self, page, pages: list[str], embed: discord.Embed, interaction: discord.Interaction):
+    super().__init__(timeout=None)
     self.value = None
+    self.page = page
+    self.pages = pages
+    self.embed = embed
+    self.num_pages = len(pages)
+    self.original_interaction = interaction
 
-  @discord.ui.button(label="Send Message", style=discord.ButtonStyle.grey)
-  async def menu1(self, button: discord.ui.Button, interaction: discord.Interaction):
-    await interaction.response.send_message("Hello you clicked me")
+      
+  @discord.ui.button(label="Previous Page", style=discord.ButtonStyle.secondary)
+  async def previous_page(self, interaction: discord.Interaction, button: discord.ui.Button):
+      if self.page == 0:
+        self.page = 1
+      self.embed.description = self.pages[self.page - 1]
+      self.page -= 1
+      self.embed.set_footer(text=f'Page {self.page + 1} of {self.num_pages}')
+      await interaction.response.edit_message(embed=self.embed)
+
+
+  
+
+  @discord.ui.button(label="Next Page", style=discord.ButtonStyle.primary)
+  async def next_page(self, interaction: discord.Interaction, button: discord.ui.Button):
+    try:
+      self.embed.description = self.pages[self.page + 1]
+      self.page += 1
+      self.embed.set_footer(text=f'Page {self.page + 1} of {self.num_pages}')
+      
+      await interaction.response.edit_message(embed=self.embed)
+    except IndexError:
+      self.embed.set_footer(text=f'Page {self.page + 1} of {self.num_pages}')
+      await interaction.response.edit_message(embed=self.embed)
+
+
+
+
+
+class linked_menu(discord.ui.View):
+  def __init__(self, page, pages: list[str], embed: discord.Embed):
+    super().__init__(timeout=None)
+    self.value = None
+    self.page = page
+    self.pages = pages
+    self.embed = embed
+    self.num_pages = len(pages)
+
+      
+  @discord.ui.button(label="Previous Page", style=discord.ButtonStyle.secondary)
+  async def previous_page(self, interaction: discord.Interaction, button: discord.ui.Button):
+    
+    if self.page == 0:
+      self.page = 1
+    self.embed.description = self.pages[self.page - 1]
+    self.page -= 1
+    self.embed.set_footer(text=f'Page {self.page + 1} of {self.num_pages}')
+    await interaction.response.edit_message(embed=self.embed)
+
+
+  
+
+  @discord.ui.button(label="Next Page", style=discord.ButtonStyle.primary)
+  async def next_page(self, interaction: discord.Interaction, button: discord.ui.Button):
+    if self.num_pages > 1:
+      button.disabled = False
+    try:
+      self.embed.description = self.pages[self.page + 1]
+      self.page += 1
+      self.embed.set_footer(text=f'Page {self.page + 1} of {self.num_pages}')
+      
+      await interaction.response.edit_message(embed=self.embed)
+    except IndexError:
+      self.embed.set_footer(text=f'Page {self.page + 1} of {self.num_pages}')
+      await interaction.response.edit_message(embed=self.embed)
+
+
 
 
 @tree.command(name = "search", description = "Search for a hadith.")
@@ -72,13 +146,20 @@ async def search(interaction: discord.Interaction, keywords: str, lang: str):
     else:
       if lang == "1":
         embed = send(hadith)
-        view = Menu()
-        await interaction.response.send_message(embed=embed)
+        view = Menu(0, hadith["pages"], embed, interaction)
+        if len(hadith["pages"]) > 1:
+          await interaction.response.send_message(embed=embed, view=view)
+        else:
+          await interaction.response.send_message(embed=embed)
         if hadith["more"] == True:
           await interaction.followup.send(f"I found more than one narrations with those keywords, [click here]({hadith['link']}) to view them.")
       else:
         embed = asend(hadith)
-        await interaction.response.send_message(embed=embed)
+        view = Menu(0, hadith["ara_pages"], embed, interaction)
+        if len(hadith["ara_pages"]) > 1:
+          await interaction.response.send_message(embed=embed, view=view)
+        else:
+          await interaction.response.send_message(embed=embed)
         if hadith["more"] == True:
           await interaction.followup.send(f"I found more than one narrations with those keywords, [click here]({hadith['link']}) to view them.")
 
@@ -98,10 +179,18 @@ async def hadith(interaction: discord.Interaction, lang: str, book: str, hadith_
   else:
     if lang == "1":
       embed = send(hadith)
-      await interaction.response.send_message(embed=embed)
+      view = Menu(0, hadith["pages"], embed, interaction)
+      if len(hadith["pages"]) > 1:
+        await interaction.response.send_message(embed=embed, view=view)
+      else:
+        await interaction.response.send_message(embed=embed)
     else:
       embed = asend(hadith)
-      await interaction.response.send_message(embed=embed)
+      view = Menu(0, hadith["ara_pages"], embed, interaction)
+      if len(hadith["ara_pages"]) > 1:
+        await interaction.response.send_message(embed=embed, view=view)
+      else:
+        await interaction.response.send_message(embed=embed)
 
 
 
@@ -109,30 +198,16 @@ async def hadith(interaction: discord.Interaction, lang: str, book: str, hadith_
 async def random(interaction: discord.Interaction):
   hadith = randomh()
   embed = send(hadith)
-  await interaction.response.send_message(embed=embed)
+  view = Menu(0, hadith["pages"], embed, interaction)
+  if len(hadith["pages"]) > 1:
+    await interaction.response.send_message(embed=embed, view=view)
+  else:
+    await interaction.response.send_message(embed=embed)
   
 
-@tree.command(name = "link", description = "Returns the linked hadith.")
-@app_commands.describe(link = "Enter link.", lang = "English or Arabic?")
-@app_commands.choices(lang = [
-  Choice(name = "English", value = "1"),
-  Choice(name = "Arabic", value = "2")
-])
-async def link(interaction: discord.Interaction, link: str, lang: str):
-    hadith = linked(link)
-    if hadith == 0:
-      await interaction.response.send_message("Enter a valid url!")
-    else:
-      if lang == "1":
-        embed = send(hadith)
-        await interaction.response.defer()
-        await asyncio.sleep(4)
-        await interaction.followup.send(embed=embed)
-      else:
-        embed = asend(hadith)
-        await interaction.response.defer()
-        await asyncio.sleep(4)
-        await interaction.followup.send(embed=embed)
+@tree.command(name = "salawat", description = "Recites salawat.")
+async def link(interaction: discord.Interaction):
+  await interaction.response.send_message("اللهم صل علی محمد و آل محمد و عجل فرجهم")
         
 
 
@@ -150,12 +225,20 @@ async def search_in(interaction: discord.Interaction, keywords: str, book: str,l
     else:
       if lang == "1":
         embed = send(hadith)
-        await interaction.response.send_message(embed=embed)
+        view = Menu(0, hadith["pages"], embed, interaction)
+        if len(hadith["pages"]) > 1:
+          await interaction.response.send_message(embed=embed, view=view)
+        else:
+          await interaction.response.send_message(embed=embed)
         if hadith["more"] == True:
           await interaction.followup.send(f"I found more than one narrations with those keywords, [click here]({hadith['link']}) to view them.")
       else:
         embed = asend(hadith)
-        await interaction.response.send_message(embed=embed)
+        view = Menu(0, hadith["ara_pages"], embed, interaction)
+        if len(hadith["ara_pages"]) > 1:
+          await interaction.response.send_message(embed=embed, view=view)
+        else:
+          await interaction.response.send_message(embed=embed)
         if hadith["more"] == True:
           await interaction.followup.send(f"I found more than one narrations with those keywords, [click here]({hadith['link']}) to view them.")
 
