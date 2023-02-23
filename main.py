@@ -12,7 +12,6 @@ from discord import app_commands
 from discord.ext import commands
 from discord.app_commands import Choice
 from discord.ext import commands
-from keep_alive import keep_alive
 
 
 intents = discord.Intents.default()
@@ -251,5 +250,4 @@ async def madad(interaction: discord.Interaction):
 
 
 
-keep_alive()
-client.run("MTA3MjI3MTA0NzI1ODI4MDAwNw.Gk6ZWS.S5dz4I0YgaZfYVe5NjLS6XBIhxhFifqe5g6oOM")
+client.run(TOKEN)
